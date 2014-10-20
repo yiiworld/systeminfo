@@ -21,14 +21,23 @@ class SI {
      * @return string
      */
     public static function getOS(){
-        return php_uname('s r v');
+        $uname = strtolower(php_uname('s r v'));
+        if (strpos($uname, "darwin") !== false) {
+            return 'OSX';
+        }else {
+            return $uname;
+        }
     }
 
     /**
      * @return string
      */
     public static function getLinuxOSRelease(){
-        if(!self::getIsWindows()) {
+        if(self::getIsWindows()) {
+            return null;
+        }elseif(self::getIsOSX()) {
+            return shell_exec('sw_vers -productVersion');
+        }else{
             return shell_exec('/usr/bin/lsb_release -ds');
         }
     }
@@ -37,7 +46,11 @@ class SI {
      * @return string
      */
     public static function getLinuxKernelVersion(){
-        if(!self::getIsWindows()){
+        if(self::getIsWindows()) {
+            return null;
+        }elseif(self::getIsOSX()) {
+            return shell_exec('uname -v');
+        }else{
             return shell_exec('/bin/uname -r');
         }
     }
@@ -64,6 +77,13 @@ class SI {
     }
 
     /**
+     * @return bool
+     */
+    public static function getIsOSX(){
+        return strpos(strtolower(PHP_OS),'darwin') === 0;
+    }
+
+    /**
      * @return null
      */
     public static function getUptime(){
@@ -85,6 +105,13 @@ class SI {
     public static function getCpuinfo($key = false){
         if(self::getIsWindows()){
             return null; // todo: Windows
+        }elseif(self::getIsOSX()){
+            $osxinfo = self::getOSXInfo();
+            if ($key == 'model name') {
+                return isset($osxinfo['machdep.cpu.brand_string']) ? $osxinfo['machdep.cpu.brand_string'] : null;
+            }elseif($key == 'cpu cores'){
+                return isset($osxinfo['hw.physicalcpu']) ? $osxinfo['hw.physicalcpu'] : null;
+            }
         } else {
             $cpuinfo = @file_get_contents('/proc/cpuinfo');
             if($cpuinfo){
@@ -244,33 +271,42 @@ class SI {
     }
 
     /**
-     * @return array
+     * @return array|null
      */
     public static function getMemoryInfo(){
-        if(self::getIsWindows()){
+        if(self::getIsWindows()) {
             return null; // todo: Windows
+        }elseif(self::getIsOSX()){
+            return self::getOSXInfo();
         } else {
-            $data = explode("\n", file_get_contents("/proc/meminfo"));
-            $meminfo = array();
-            foreach ($data as $line) {
-                $line = explode(":", $line);
-                if(isset($line[0]) && isset($line[1])){
-                    $meminfo[$line[0]] = trim($line[1]);
+            $data = @explode("\n", file_get_contents("/proc/meminfo"));
+            if ($data) {
+                $meminfo = array();
+                foreach ($data as $line) {
+                    $line = explode(":", $line);
+                    if (isset($line[0]) && isset($line[1])) {
+                        $meminfo[$line[0]] = trim($line[1]);
+                    }
                 }
+                return $meminfo;
             }
-            return $meminfo;
         }
+
+        return null;
     }
 
     /**
      * @return bool|int
      */
     public static function getTotalMem(){
-        if(self::getIsWindows()){
+        if(self::getIsWindows()) {
             //todo
+        }elseif(self::getIsOSX()){
+            $meminfo = self::getMemoryInfo();
+            return isset($meminfo['net.local.dgram.recvspace']) ? intval($meminfo['net.local.dgram.recvspace']) * 1024 * 1024 : null;
         } else {
             $meminfo = self::getMemoryInfo();
-            return isset($meminfo['MemTotal']) ? intval($meminfo['MemTotal']) * 1024 : false;
+            return isset($meminfo['MemTotal']) ? intval($meminfo['MemTotal']) * 1024 : null;
         }
     }
 
@@ -280,9 +316,11 @@ class SI {
     public static function getFreeMem(){
         if(self::getIsWindows()){
             //todo
+        }elseif(self::getIsOSX()){
+            //todo
         } else {
             $meminfo = self::getMemoryInfo();
-            return isset($meminfo['MemFree']) ? intval($meminfo['MemFree']) * 1024 : false;
+            return isset($meminfo['MemFree']) ? intval($meminfo['MemFree']) * 1024 : null;
         }
     }
 
@@ -292,9 +330,13 @@ class SI {
     public static function getTotalSwap(){
         if(self::getIsWindows()){
             //todo
+        }elseif(self::getIsOSX()){
+            $meminfo = self::getMemoryInfo();
+            preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
+            return isset($res[1][0]) ? intval($res[1][0]) * 1024 * 1024 : null;
         } else {
             $meminfo = self::getMemoryInfo();
-            return isset($meminfo['SwapTotal']) ? intval($meminfo['SwapTotal']) * 1024 : false;
+            return isset($meminfo['SwapTotal']) ? intval($meminfo['SwapTotal']) * 1024 : null;
         }
     }
 
@@ -304,9 +346,13 @@ class SI {
     public static function getFreeSwap(){
         if(self::getIsWindows()){
             //todo
+        }elseif(self::getIsOSX()){
+            $meminfo = self::getMemoryInfo();
+            preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
+            return isset($res[1][2]) ? intval($res[1][2]) * 1024 * 1024 : null;
         } else {
             $meminfo = self::getMemoryInfo();
-            return isset($meminfo['SwapFree']) ? intval($meminfo['SwapFree']) * 1024 : false;
+            return isset($meminfo['SwapFree']) ? intval($meminfo['SwapFree']) * 1024 : null;
         }
     }
 
@@ -344,4 +390,19 @@ class SI {
             return mysqli_get_server_info($connection);
         }
     }
-} 
+
+    /**
+     * @return array
+     */
+    public static function getOSXInfo(){
+        $data = explode("\n", shell_exec("sysctl -A"));  // system_profiler SPHardwareDataType
+        $result = array();
+        foreach ($data as $line) {
+            $line = explode(":", $line);
+            if(isset($line[0]) && isset($line[1])){
+                $result[$line[0]] = trim($line[1]);
+            }
+        }
+        return $result;
+    }
+}

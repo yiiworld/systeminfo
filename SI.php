@@ -228,8 +228,13 @@ class SI {
      * @return mixed string|array
      */
     public static function getLoadAverage($key = false){
-        $la = array_combine([1,5,15], sys_getloadavg());
-        return ($key !== false && isset($la[$key])) ? $la[$key] : $la;
+        if(self::getIsWindows()){
+           return null;
+        } else {
+           $la = array_combine([1,5,15], sys_getloadavg());
+           return ($key !== false && isset($la[$key])) ? $la[$key] : $la;
+        }
+
     }
 
     /**

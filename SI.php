@@ -84,11 +84,17 @@ class SI {
     }
 
     /**
-     * @return null
+     * @return int|null
      */
     public static function getUptime(){
         if(self::getIsWindows()){
-            return null; // todo: Windows
+            // todo: Windows
+        }elseif(self::getIsOSX()){
+            $uptime = shell_exec("uptime | awk '{ print $3 }'");
+            if ($uptime){
+                $uptime = explode(':', $uptime);
+                return $uptime[0] * 3600 + $uptime[1] * 60;
+            }
         } else {
             $uptime = @file_get_contents('/proc/uptime');
             if($uptime){
@@ -96,6 +102,7 @@ class SI {
                 return isset($uptime[0]) ? $uptime[0] : null;
             }
         }
+        return null;
     }
 
     /**

@@ -90,10 +90,9 @@ class SI {
         if(self::getIsWindows()){
             // todo: Windows
         }elseif(self::getIsOSX()){
-            $uptime = shell_exec("uptime | awk '{ print $3 }'");
+            $uptime = shell_exec("sysctl -n kern.boottime | awk '{print $4}' | sed 's/,//'");
             if ($uptime){
-                $uptime = explode(':', $uptime);
-                return $uptime[0] * 3600 + $uptime[1] * 60;
+                return time() - $uptime;
             }
         } else {
             $uptime = @file_get_contents('/proc/uptime');

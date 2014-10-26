@@ -84,11 +84,16 @@ class SI {
     }
 
     /**
-     * @return null
+     * @return int|null
      */
     public static function getUptime(){
         if(self::getIsWindows()){
-            return null; // todo: Windows
+            // todo: Windows
+        }elseif(self::getIsOSX()){
+            $uptime = shell_exec("sysctl -n kern.boottime | awk '{print $4}' | sed 's/,//'");
+            if ($uptime){
+                return time() - $uptime;
+            }
         } else {
             $uptime = @file_get_contents('/proc/uptime');
             if($uptime){
@@ -96,6 +101,7 @@ class SI {
                 return isset($uptime[0]) ? $uptime[0] : null;
             }
         }
+        return null;
     }
 
     /**
@@ -228,8 +234,13 @@ class SI {
      * @return mixed string|array
      */
     public static function getLoadAverage($key = false){
-        $la = array_combine([1,5,15], sys_getloadavg());
-        return ($key !== false && isset($la[$key])) ? $la[$key] : $la;
+        if(self::getIsWindows()){
+           return null;
+        } else {
+           $la = array_combine([1,5,15], sys_getloadavg());
+           return ($key !== false && isset($la[$key])) ? $la[$key] : $la;
+        }
+
     }
 
     /**

@@ -35,7 +35,7 @@ class SI {
     public static function getLinuxOSRelease(){
         if(self::getIsWindows()) {
             return null;
-        }elseif(self::getIsOSX()) {
+        }elseif(self::getIsBSD()) {
             return shell_exec('sw_vers -productVersion');
         }else{
             return shell_exec('/usr/bin/lsb_release -ds');
@@ -48,7 +48,7 @@ class SI {
     public static function getLinuxKernelVersion(){
         if(self::getIsWindows()) {
             return null;
-        }elseif(self::getIsOSX()) {
+        }elseif(self::getIsBSD()) {
             return shell_exec('uname -v');
         }else{
             return shell_exec('/bin/uname -r');
@@ -79,8 +79,11 @@ class SI {
     /**
      * @return bool
      */
-    public static function getIsOSX(){
-        return strpos(strtolower(PHP_OS),'darwin') === 0;
+    public static function getIsBSD(){
+        if (stristr(strtolower(PHP_OS), "darwin") === false && stristr(strtolower(PHP_OS), "bsd") === false) {
+            return false;
+        }
+        return true;;
     }
 
     /**
@@ -89,7 +92,7 @@ class SI {
     public static function getUptime(){
         if(self::getIsWindows()){
             // todo: Windows
-        }elseif(self::getIsOSX()){
+        }elseif(self::getIsBSD()){
             $uptime = shell_exec("sysctl -n kern.boottime | awk '{print $4}' | sed 's/,//'");
             if ($uptime){
                 return time() - $uptime;
@@ -111,8 +114,8 @@ class SI {
     public static function getCpuinfo($key = false){
         if(self::getIsWindows()){
             return null; // todo: Windows
-        }elseif(self::getIsOSX()){
-            $osxinfo = self::getOSXInfo();
+        }elseif(self::getIsBSD()){
+            $osxinfo = self::getBSDInfo();
             if ($key == 'model name') {
                 return isset($osxinfo['machdep.cpu.brand_string']) ? $osxinfo['machdep.cpu.brand_string'] : null;
             }elseif($key == 'cpu cores'){
@@ -287,8 +290,8 @@ class SI {
     public static function getMemoryInfo(){
         if(self::getIsWindows()) {
             return null; // todo: Windows
-        }elseif(self::getIsOSX()){
-            return self::getOSXInfo();
+        }elseif(self::getIsBSD()){
+            return self::getBSDInfo();
         } else {
             $data = @explode("\n", file_get_contents("/proc/meminfo"));
             if ($data) {
@@ -312,7 +315,7 @@ class SI {
     public static function getTotalMem(){
         if(self::getIsWindows()) {
             //todo
-        }elseif(self::getIsOSX()){
+        }elseif(self::getIsBSD()){
             $meminfo = self::getMemoryInfo();
             return isset($meminfo['net.local.dgram.recvspace']) ? intval($meminfo['net.local.dgram.recvspace']) * 1024 * 1024 : null;
         } else {
@@ -327,7 +330,7 @@ class SI {
     public static function getFreeMem(){
         if(self::getIsWindows()){
             //todo
-        }elseif(self::getIsOSX()){
+        }elseif(self::getIsBSD()){
             //todo
         } else {
             $meminfo = self::getMemoryInfo();
@@ -341,7 +344,7 @@ class SI {
     public static function getTotalSwap(){
         if(self::getIsWindows()){
             //todo
-        }elseif(self::getIsOSX()){
+        }elseif(self::getIsBSD()){
             $meminfo = self::getMemoryInfo();
             preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
             return isset($res[1][0]) ? intval($res[1][0]) * 1024 * 1024 : null;
@@ -357,7 +360,7 @@ class SI {
     public static function getFreeSwap(){
         if(self::getIsWindows()){
             //todo
-        }elseif(self::getIsOSX()){
+        }elseif(self::getIsBSD()){
             $meminfo = self::getMemoryInfo();
             preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
             return isset($res[1][2]) ? intval($res[1][2]) * 1024 * 1024 : null;
@@ -405,8 +408,8 @@ class SI {
     /**
      * @return array
      */
-    public static function getOSXInfo(){
-        $data = explode("\n", shell_exec("sysctl -A"));  // system_profiler SPHardwareDataType
+    public static function getBSDInfo(){
+        $data = explode(PHP_EOL, shell_exec("sysctl -A"));  // system_profiler SPHardwareDataType
         $result = array();
         foreach ($data as $line) {
             $line = explode(":", $line);

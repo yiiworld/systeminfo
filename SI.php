@@ -141,7 +141,7 @@ class SI {
      * @return mixed
      */
     public static function getServerIP(){
-        return self::getIsISS() ? $_SERVER['LOCAL_ADDR'] : $_SERVER['SERVER_ADDR'];
+        return self::getIsISS() ? self::getServerVariable('LOCAL_ADDR') : self::getServerVariable('SERVER_ADDR');
     }
 
     /**
@@ -161,7 +161,7 @@ class SI {
      * @return mixed
      */
     public static function getServerSoftware(){
-        return $_SERVER['SERVER_SOFTWARE'];
+        return self::getServerVariable('SERVER_SOFTWARE');
     }
 
     /**
@@ -404,5 +404,15 @@ class SI {
             }
         }
         return $result;
+    }
+
+    /**
+     * Retrieves data from $_SERVER array
+     * @param $key
+     * @return mixed|null
+     */
+    public static function getServerVariable($key)
+    {
+        return isset($_SERVER[$key]) ? $_SERVER[$key] : null;
     }
 }

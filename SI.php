@@ -254,7 +254,7 @@ class SI {
         if(self::getIsWindows()){
             // todo
         } else {
-            function stat(){
+            $stat = function(){
                 $stat = @file_get_contents('/proc/stat');
                 $stat = explode("\n", $stat);
                 $result = [];
@@ -270,10 +270,10 @@ class SI {
 
                 }
                 return $result;
-            }
-            $stat1 = stat();
+            };
+            $stat1 = $stat();
             usleep($interval * 1000000);
-            $stat2 = stat();
+            $stat2 = $stat();
             $usage = [];
             for($i = 0; $i < self::getCpuCores(); $i++){
                 $total = array_sum($stat2[$i]) - array_sum($stat1[$i]);

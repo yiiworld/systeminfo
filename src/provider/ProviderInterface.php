@@ -90,15 +90,24 @@ interface ProviderInterface
     public function getUptime();
 
     /**
-     * @param bool $key
      * @return array|null
      */
-    public function getCpuInfo($key = false);
+    public function getCpuInfo();
 
     /**
      * @return array|null
      */
     public function getCpuCores();
+
+    /**
+     * @return array|null
+     */
+    public function getCpuModel();
+
+    /**
+     * @return array|null
+     */
+    public function getCpuVendor();
 
     /**
      * @return mixed

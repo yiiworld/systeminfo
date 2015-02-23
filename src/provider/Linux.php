@@ -32,30 +32,15 @@ class Linux extends AbstractProvider
      */
     public function getKernelVersion()
     {
-        if (self::isWindowsOs()) {
-            return null;
-        } elseif (self::isBSDOs()) {
-            return shell_exec('uname -v');
-        } else {
-            return shell_exec('/bin/uname -r');
-        }
+        return shell_exec('/bin/uname -r');
     }
 
     /**
      */
     public function getTotalSwap()
     {
-        if (self::isWindowsOs()) {
-            //todo
-        } elseif (self::isBSDOs()) {
-            $meminfo = self::getMemoryInfo();
-            preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
-            return isset($res[1][0]) ? intval($res[1][0]) * 1024 * 1024 : null;
-        } else {
-            $meminfo = self::getMemoryInfo();
-            return isset($meminfo['SwapTotal']) ? intval($meminfo['SwapTotal']) * 1024 : null;
-        }
-        return null;
+        $meminfo = self::getMemoryInfo();
+        return isset($meminfo['SwapTotal']) ? intval($meminfo['SwapTotal']) * 1024 : null;
     }
 
     /**
@@ -63,18 +48,8 @@ class Linux extends AbstractProvider
      */
     public function getTotalMem()
     {
-        if (self::isWindowsOs()) {
-            //todo
-        } elseif (self::isBSDOs()) {
-            $meminfo = self::getMemoryInfo();
-            return isset($meminfo['net.local.dgram.recvspace'])
-                ? intval($meminfo['net.local.dgram.recvspace']) * 1024 * 1024
-                : null;
-        } else {
-            $meminfo = self::getMemoryInfo();
-            return isset($meminfo['MemTotal']) ? intval($meminfo['MemTotal']) * 1024 : null;
-        }
-        return null;
+        $meminfo = self::getMemoryInfo();
+        return isset($meminfo['MemTotal']) ? intval($meminfo['MemTotal']) * 1024 : null;
     }
 
     /**
@@ -82,25 +57,15 @@ class Linux extends AbstractProvider
      */
     public function getMemoryInfo()
     {
-        if (self::isWindowsOs()) {
-            return null; // todo: Windows
-        } elseif (self::isBSDOs()) {
-            return self::getBSDInfo();
-        } else {
-            $data = @explode("\n", file_get_contents("/proc/meminfo"));
-            if ($data) {
-                $meminfo = array();
-                foreach ($data as $line) {
-                    $line = explode(":", $line);
-                    if (isset($line[0]) && isset($line[1])) {
-                        $meminfo[$line[0]] = trim($line[1]);
-                    }
-                }
-                return $meminfo;
+        $data = @explode("\n", file_get_contents("/proc/meminfo"));
+        $meminfo = array();
+        foreach ($data as $line) {
+            $line = explode(":", $line);
+            if (isset($line[0]) && isset($line[1])) {
+                $meminfo[$line[0]] = trim($line[1]);
             }
         }
-
-        return null;
+        return $meminfo;
     }
 
     /**
@@ -108,15 +73,8 @@ class Linux extends AbstractProvider
      */
     public function getFreeMem()
     {
-        if (self::isWindowsOs()) {
-            //todo
-        } elseif (self::isBSDOs()) {
-            //todo
-        } else {
-            $meminfo = self::getMemoryInfo();
-            return isset($meminfo['MemFree']) ? (int) $meminfo['MemFree'] * 1024 : null;
-        }
-        return null;
+        $meminfo = self::getMemoryInfo();
+        return isset($meminfo['MemFree']) ? (int) $meminfo['MemFree'] * 1024 : null;
     }
 
     /**
@@ -131,5 +89,21 @@ class Linux extends AbstractProvider
     public function getOsType()
     {
         return 'Linux';
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCpuModel()
+    {
+        // TODO: Implement getCpuModel() method.
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCpuVendor()
+    {
+        // TODO: Implement getCpuVendor() method.
     }
 }

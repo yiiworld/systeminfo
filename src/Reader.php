@@ -2,7 +2,7 @@
 
 namespace systeminfo;
 
-use systeminfo\provider\AbstractProvider;
+use systeminfo\provider\BaseProvider;
 
 /**
  * Class Reader

@@ -19,4 +19,22 @@ class Mac extends AbstractBSD
     {
         return 'Mac';
     }
+
+    public function getFreeMem()
+    {
+        // TODO: Implement getFreeMem() method.
+    }
+
+    public function getFreeSwap()
+    {
+        // TODO: Implement getFreeSwap() method.
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCpuVendor()
+    {
+        // TODO: Implement getCpuVendor() method.
+    }
 }

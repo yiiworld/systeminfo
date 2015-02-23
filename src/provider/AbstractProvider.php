@@ -60,24 +60,6 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
-     * @return int|null
-     */
-    public function getUptime()
-    {
-        if (self::isWindowsOs()) {
-            // todo: Windows
-        } elseif (self::isBSDOs()) {
-            $uptime = shell_exec("sysctl -n kern.boottime | awk '{print $4}' | sed 's/,//'");
-            if ($uptime) {
-                return (int)(time() - $uptime);
-            }
-        } else {
-
-        }
-        return null;
-    }
-
-    /**
      * @param bool $key
      * @return array|null
      */

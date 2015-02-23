@@ -30,11 +30,6 @@ class Windows extends AbstractProvider
         return false;
     }
 
-    protected function getWMI()
-    {
-
-    }
-
     public function getKernelVersion()
     {
         // TODO: Implement getKernelVersion() method.
@@ -69,5 +64,39 @@ class Windows extends AbstractProvider
     public function getFreeSwap()
     {
         // TODO: Implement getFreeSwap() method.
+    }
+
+    protected function getWMI()
+    {
+        $wmi = new \COM('winmgmts:{impersonationLevel=impersonate}//./root/cimv2');
+
+        if (!is_object($wmi)) {
+            throw new \RuntimeException('WMI access error. Please enable DCOM in php.ini and allow the current
+                user to access the WMI DCOM object.');
+        }
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getUptime()
+    {
+        // TODO: Implement getUptime() method.
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCpuModel()
+    {
+        // TODO: Implement getCpuModel() method.
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCpuVendor()
+    {
+        // TODO: Implement getCpuVendor() method.
     }
 }

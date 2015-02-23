@@ -20,21 +20,16 @@ class BSD extends AbstractBSD
         return 'BSD';
     }
 
-    /**
-     * @return bool|int
-     */
-    public function getFreeSwap()
+    public function getFreeMem()
     {
-        if (self::getIsWindows()) {
-            //todo
-        } elseif (self::getIsBSD()) {
-            $meminfo = self::getMemoryInfo();
-            preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
-            return isset($res[1][2]) ? intval($res[1][2]) * 1024 * 1024 : null;
-        } else {
-            $meminfo = self::getMemoryInfo();
-            return isset($meminfo['SwapFree']) ? intval($meminfo['SwapFree']) * 1024 : null;
-        }
-        return null;
+        // TODO: Implement getFreeMem() method.
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpuVendor()
+    {
+        // TODO: Implement getCpuVendor() method.
     }
 }

@@ -1,7 +1,6 @@
 <?php
 namespace systeminfo\provider;
 
-
 /**
  * Class BaseProvider
  * @package systeminfo\provider

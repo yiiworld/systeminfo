@@ -16,10 +16,10 @@ class Reader
     protected static $provider;
 
     public static $providers = [
-        'Windows' => 'systeminfo\os\Windows',
-        'Mac' => 'systeminfo\os\Mac',
-        'BSD' => 'systeminfo\os\BSD',
-        'Linux' => 'systeminfo\os\Linux'
+        'Windows' => 'systeminfo\provider\Windows',
+        'Mac' => 'systeminfo\provider\Mac',
+        'BSD' => 'systeminfo\provider\BSD',
+        'Linux' => 'systeminfo\provider\Linux'
     ];
 
     public static function getProvider()

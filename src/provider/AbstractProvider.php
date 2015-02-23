@@ -33,7 +33,7 @@ abstract class AbstractProvider implements ProviderInterface
         return php_uname('m');
     }
 
-    public function getIsLinux()
+    public function isLinuxOs()
     {
         return $this->getOsType() === 'Linux';
     }
@@ -41,7 +41,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @return bool
      */
-    public function getIsWindows()
+    public function isWindowsOs()
     {
         return $this->getOsType() === 'Windows';
     }
@@ -49,12 +49,12 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @return bool
      */
-    public function getIsBSD()
+    public function isBSDOs()
     {
         return $this->getOsType() === 'BSD';
     }
 
-    public function getIsMac()
+    public function isMacOs()
     {
         return $this->getOsType() === 'Mac';
     }
@@ -64,12 +64,12 @@ abstract class AbstractProvider implements ProviderInterface
      */
     public function getUptime()
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             // todo: Windows
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             $uptime = shell_exec("sysctl -n kern.boottime | awk '{print $4}' | sed 's/,//'");
             if ($uptime) {
-                return time() - $uptime;
+                return (int)(time() - $uptime);
             }
         } else {
 
@@ -83,9 +83,9 @@ abstract class AbstractProvider implements ProviderInterface
      */
     public function getCpuinfo($key = false)
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             return null; // todo: Windows
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             $osxinfo = self::getBSDInfo();
             if ($key == 'model name') {
                 return isset($osxinfo['machdep.cpu.brand_string']) ? $osxinfo['machdep.cpu.brand_string'] : null;
@@ -116,7 +116,7 @@ abstract class AbstractProvider implements ProviderInterface
      */
     public function getCpuCores()
     {
-        return self::getCpuinfo('cpu cores');
+        return $this->getCpuinfo('cpu cores');
     }
 
     /**
@@ -124,7 +124,7 @@ abstract class AbstractProvider implements ProviderInterface
      */
     public function getServerIP()
     {
-        return self::getIsISS() ? self::getServerVariable('LOCAL_ADDR') : self::getServerVariable('SERVER_ADDR');
+        return $this->isISS() ? $this->getServerVariable('LOCAL_ADDR') : $this->getServerVariable('SERVER_ADDR');
     }
 
     /**
@@ -152,7 +152,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @return bool
      */
-    public function getIsISS()
+    public function isISS()
     {
         return strpos(strtolower($this->getServerSoftware()), 'microsoft-iis') !== false;
     }
@@ -160,7 +160,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @return bool
      */
-    public function getIsNginx()
+    public function isNginx()
     {
         return strpos(strtolower($this->getServerSoftware()), 'nginx') !== false;
     }
@@ -168,7 +168,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @return bool
      */
-    public function getIsApache()
+    public function isApache()
     {
         return strpos(strtolower(self::getServerSoftware()), 'apache') !== false;
     }
@@ -204,7 +204,7 @@ abstract class AbstractProvider implements ProviderInterface
         }
         $ping = [];
         for ($i = 0; $i < count($hosts); $i++) {
-            $command = self::getIsWindows()
+            $command = self::isWindowsOs()
                 ? 'ping' // todo: Windows
                 : "/bin/ping -qc {$count} {$hosts[$i]} | awk -F/ '/^rtt/ { print $5 }'";
             $result = array();
@@ -305,5 +305,15 @@ abstract class AbstractProvider implements ProviderInterface
     public function getServerVariable($key)
     {
         return isset($_SERVER[$key]) ? $_SERVER[$key] : null;
+    }
+
+    public function getPhpSapiName()
+    {
+        return php_sapi_name();
+    }
+
+    public function isCliSapi()
+    {
+        return strtolower(substr($this->getPhpSapiName(), 0, 3)) === 'cli';
     }
 }

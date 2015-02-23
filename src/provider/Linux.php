@@ -7,16 +7,14 @@ namespace systeminfo\provider;
  * @author Eugene Terentev <eugene@terentev.net>
  * @package systeminfo\os
  */
-class Linux extends Provider
+class Linux extends AbstractProvider
 {
-    public $osType = 'Linux';
-
     public function getUptime()
     {
         $uptime = @file_get_contents('/proc/uptime');
         if ($uptime) {
             $uptime = explode('.', $uptime);
-            return isset($uptime[0]) ? $uptime[0] : null;
+            return (int) array_shift($uptime);
         }
         return false;
     }
@@ -26,23 +24,17 @@ class Linux extends Provider
      */
     public function getOsRelease()
     {
-        if (self::getIsWindows()) {
-            return null;
-        } elseif (self::getIsBSD()) {
-            return shell_exec('sw_vers -productVersion');
-        } else {
-            return shell_exec('/usr/bin/lsb_release -ds');
-        }
+        return shell_exec('/usr/bin/lsb_release -ds');
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getKernelVersion()
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             return null;
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             return shell_exec('uname -v');
         } else {
             return shell_exec('/bin/uname -r');
@@ -53,9 +45,9 @@ class Linux extends Provider
      */
     public function getTotalSwap()
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             //todo
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             $meminfo = self::getMemoryInfo();
             preg_match_all('/=(.*?)M/', $meminfo['vm.swapusage'], $res);
             return isset($res[1][0]) ? intval($res[1][0]) * 1024 * 1024 : null;
@@ -71,9 +63,9 @@ class Linux extends Provider
      */
     public function getTotalMem()
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             //todo
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             $meminfo = self::getMemoryInfo();
             return isset($meminfo['net.local.dgram.recvspace'])
                 ? intval($meminfo['net.local.dgram.recvspace']) * 1024 * 1024
@@ -90,9 +82,9 @@ class Linux extends Provider
      */
     public function getMemoryInfo()
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             return null; // todo: Windows
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             return self::getBSDInfo();
         } else {
             $data = @explode("\n", file_get_contents("/proc/meminfo"));
@@ -116,9 +108,9 @@ class Linux extends Provider
      */
     public function getFreeMem()
     {
-        if (self::getIsWindows()) {
+        if (self::isWindowsOs()) {
             //todo
-        } elseif (self::getIsBSD()) {
+        } elseif (self::isBSDOs()) {
             //todo
         } else {
             $meminfo = self::getMemoryInfo();
@@ -136,4 +128,8 @@ class Linux extends Provider
     }
 
 
+    public function getOsType()
+    {
+        return 'Linux';
+    }
 }

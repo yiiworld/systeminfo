@@ -62,30 +62,47 @@ abstract class AbstractBSD extends Provider
     }
 
     /**
-     * @return array|null
+     * @inheritdoc
      */
     public function getMemoryInfo()
     {
-        if (self::getIsWindows()) {
-            return null; // todo: Windows
-        } elseif (self::getIsBSD()) {
-            return self::getBSDInfo();
-        } else {
-            $data = @explode("\n", file_get_contents("/proc/meminfo"));
-            if ($data) {
-                $meminfo = array();
-                foreach ($data as $line) {
-                    $line = explode(":", $line);
-                    if (isset($line[0]) && isset($line[1])) {
-                        $meminfo[$line[0]] = trim($line[1]);
-                    }
+        $data = explode("\n", file_get_contents("/proc/meminfo"));
+        if ($data) {
+            $meminfo = array();
+            foreach ($data as $line) {
+                $line = explode(":", $line);
+                if (isset($line[0], $line[1])) {
+                    $meminfo[$line[0]] = trim($line[1]);
                 }
-                return $meminfo;
             }
+            return $meminfo;
         }
-
-        return null;
     }
 
+    public function getOsRelease()
+    {
+        return shell_exec('sw_vers -productVersion');
+    }
 
+    /**
+     * @inheritdoc string
+     */
+    public function getKernelVersion()
+    {
+        return shell_exec('uname -v');
+    }
+
+    /**
+     * @param string $key
+     * @return array|null
+     */
+    public function getCpuinfo($key)
+    {
+        $bsdinfo = $this->getBSDInfo();
+        if ($key === 'model name') {
+            return array_key_exists('machdep.cpu.brand_string', $bsdinfo) ? $bsdinfo['machdep.cpu.brand_string'] : null;
+        } elseif ($key === 'cpu cores') {
+            return array_key_exists('hw.physicalcpu', $bsdinfo) ? $bsdinfo['hw.physicalcpu'] : null;
+        }
+    }
 }

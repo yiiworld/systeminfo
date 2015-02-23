@@ -13,10 +13,22 @@ interface ProviderInterface
 
     public function getKernelVersion();
 
+    /**
+     * @param \PDO $connection
+     * @return mixed
+     */
     public function getDbVersion(\PDO $connection);
 
+    /**
+     * @param \PDO $connection
+     * @return mixed
+     */
     public function getDbInfo(\PDO $connection);
 
+    /**
+     * @param \PDO $connection
+     * @return mixed
+     */
     public function getDbType(\PDO $connection);
 
     /**
@@ -55,19 +67,22 @@ interface ProviderInterface
     /**
      * @return bool
      */
-    public function getIsLinux();
+    public function isLinuxOs();
 
     /**
      * @return bool
      */
-    public function getIsWindows();
+    public function isWindowsOs();
 
     /**
      * @return bool
      */
-    public function getIsBSD();
+    public function isBSDOs();
 
-    public function getIsMac();
+    /**
+     * @return bool
+     */
+    public function isMacOs();
 
     /**
      * @return int|null
@@ -103,17 +118,17 @@ interface ProviderInterface
     /**
      * @return bool
      */
-    public function getIsISS();
+    public function isISS();
 
     /**
      * @return bool
      */
-    public function getIsNginx();
+    public function isNginx();
 
     /**
      * @return bool
      */
-    public function getIsApache();
+    public function isApache();
 
     /**
      * @param int $what
@@ -151,4 +166,13 @@ interface ProviderInterface
      * @return mixed|null
      */
     public function getServerVariable($key);
+
+    public function getPhpSapiName();
+
+    /**
+     * @return bool
+     */
+    public function isCliSapi();
+
+
 }

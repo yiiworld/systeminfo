@@ -7,7 +7,7 @@ namespace systeminfo\provider;
  * @author Eugene Terentev <eugene@terentev.net>
  * @package systeminfo\os
  */
-class Windows extends Provider
+class Windows extends AbstractProvider
 {
 
     public function getOsRelease()
@@ -28,5 +28,46 @@ class Windows extends Provider
     public function getLoadAverage($key = null)
     {
         return false;
+    }
+
+    protected function getWMI()
+    {
+
+    }
+
+    public function getKernelVersion()
+    {
+        // TODO: Implement getKernelVersion() method.
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getMemoryInfo()
+    {
+        // TODO: Implement getMemoryInfo() method.
+    }
+
+    /**
+     * @return bool|int
+     */
+    public function getTotalMem()
+    {
+        // TODO: Implement getTotalMem() method.
+    }
+
+    public function getFreeMem()
+    {
+        // TODO: Implement getFreeMem() method.
+    }
+
+    public function getTotalSwap()
+    {
+        // TODO: Implement getTotalSwap() method.
+    }
+
+    public function getFreeSwap()
+    {
+        // TODO: Implement getFreeSwap() method.
     }
 }

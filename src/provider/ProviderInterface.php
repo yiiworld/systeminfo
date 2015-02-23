@@ -182,6 +182,4 @@ interface ProviderInterface
      * @return bool
      */
     public function isCliSapi();
-
-
 }

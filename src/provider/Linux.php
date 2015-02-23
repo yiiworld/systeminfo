@@ -11,12 +11,9 @@ class Linux extends AbstractProvider
 {
     public function getUptime()
     {
-        $uptime = @file_get_contents('/proc/uptime');
-        if ($uptime) {
-            $uptime = explode('.', $uptime);
-            return (int) array_shift($uptime);
-        }
-        return false;
+        $uptime = file_get_contents('/proc/uptime');
+        $uptime = explode('.', $uptime);
+        return (int) array_shift($uptime);
     }
 
     /**
@@ -39,8 +36,8 @@ class Linux extends AbstractProvider
      */
     public function getTotalSwap()
     {
-        $meminfo = self::getMemoryInfo();
-        return isset($meminfo['SwapTotal']) ? intval($meminfo['SwapTotal']) * 1024 : null;
+        $meminfo = $this->getMemoryInfo();
+        return array_key_exists('SwapTotal', $meminfo) ? (int) $meminfo['SwapTotal'] : null;
     }
 
     /**
@@ -48,8 +45,8 @@ class Linux extends AbstractProvider
      */
     public function getTotalMem()
     {
-        $meminfo = self::getMemoryInfo();
-        return isset($meminfo['MemTotal']) ? intval($meminfo['MemTotal']) * 1024 : null;
+        $meminfo = $this->getMemoryInfo();
+        return array_key_exists('MemTotal', $meminfo) ? (int) $meminfo['MemTotal'] : null;
     }
 
     /**
@@ -57,11 +54,11 @@ class Linux extends AbstractProvider
      */
     public function getMemoryInfo()
     {
-        $data = @explode("\n", file_get_contents("/proc/meminfo"));
+        $data = explode("\n", file_get_contents("/proc/meminfo"));
         $meminfo = array();
         foreach ($data as $line) {
             $line = explode(":", $line);
-            if (isset($line[0]) && isset($line[1])) {
+            if (isset($line[0], $line[1])) {
                 $meminfo[$line[0]] = trim($line[1]);
             }
         }
@@ -73,16 +70,22 @@ class Linux extends AbstractProvider
      */
     public function getFreeMem()
     {
-        $meminfo = self::getMemoryInfo();
-        return isset($meminfo['MemFree']) ? (int) $meminfo['MemFree'] * 1024 : null;
+        $memInfo = $this->getMemoryInfo();
+
+        $memFree = array_key_exists('MemFree', $memInfo) ? (int) $memInfo['MemFree'] : null;
+        $cached  = array_key_exists('Cached', $memInfo) ? (int) $memInfo['Cached'] : null;
+
+        $result = ($memFree ?: null) + ($cached ?: null);
+
+        return $result ?: null;
     }
 
     /**
      */
     public function getFreeSwap()
     {
-        $meminfo = self::getMemoryInfo();
-        return isset($meminfo['SwapFree']) ? intval($meminfo['SwapFree']) * 1024 : null;
+        $meminfo = $this->getMemoryInfo();
+        return array_key_exists('SwapFree', $meminfo) ? (int) $meminfo['SwapFree'] : null;
     }
 
 
